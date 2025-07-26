@@ -5,7 +5,6 @@ export class Game2048 {
     this.scene = scene;
     this.updateScore = updateScore;
     this.onGameOver = onGameOver;
-    this.tiles = [];
     this.grid = [...Array(4)].map(() => Array(4).fill(null));
     this.score = 0;
   }
@@ -24,7 +23,6 @@ export class Game2048 {
         if (tile) this.scene.remove(tile.mesh);
       }
     }
-    this.tiles = [];
     this.grid = [...Array(4)].map(() => Array(4).fill(null));
     this.score = 0;
   }
@@ -69,8 +67,7 @@ export class Game2048 {
           if (!target) {
             this.grid[ty][tx] = tile;
             this.grid[ny][nx] = null;
-            tile.x = tx;
-            tile.y = ty;
+            tile.moveTo(tx, ty);
             moved = true;
             nx = tx;
             ny = ty;
@@ -89,23 +86,15 @@ export class Game2048 {
       }
     }
 
-    // Reset merge flags
+    // Скидаємо прапорці злиття
     for (let row of this.grid) {
       for (let tile of row) {
         if (tile) tile.merged = false;
       }
     }
 
-    // Update positions
-    for (let row of this.grid) {
-      for (let tile of row) {
-        if (tile) tile.updatePosition();
-      }
-    }
-
     if (moved) {
       if (!this.addRandomTile()) {
-        // Якщо не вдалося додати плитку – можливо гра закінчена
         if (this.isGameOver()) {
           this.onGameOver(this.score);
         }
@@ -114,8 +103,15 @@ export class Game2048 {
     }
   }
 
+  update(delta) {
+    for (let row of this.grid) {
+      for (let tile of row) {
+        if (tile) tile.update(delta);
+      }
+    }
+  }
+
   isGameOver() {
-    // Перевірка чи залишилися ходи
     for (let y = 0; y < 4; y++) {
       for (let x = 0; x < 4; x++) {
         if (!this.grid[y][x]) return false;

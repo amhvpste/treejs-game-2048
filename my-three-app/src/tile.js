@@ -14,7 +14,9 @@ export class Tile {
 
     this.sprite = this.createTextSprite(value);
     this.mesh.add(this.sprite);
-    this.updatePosition();
+
+    this.targetPos = new THREE.Vector3(this.x - 1.5, 1.5 - this.y, 0);
+    this.mesh.position.copy(this.targetPos);
   }
 
   updateValue(newValue) {
@@ -46,7 +48,13 @@ export class Tile {
     return sprite;
   }
 
-  updatePosition() {
-    this.mesh.position.set(this.x - 1.5, 1.5 - this.y, 0);
+  moveTo(x, y) {
+    this.x = x;
+    this.y = y;
+    this.targetPos.set(x - 1.5, 1.5 - y, 0);
+  }
+
+  update(delta) {
+    this.mesh.position.lerp(this.targetPos, delta * 10);
   }
 }

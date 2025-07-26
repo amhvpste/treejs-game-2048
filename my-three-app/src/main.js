@@ -10,7 +10,6 @@ const highScoreElem = document.getElementById('high-score');
 
 function updateScore(score) {
   scoreboard.textContent = score;
-  // Збереження рекорду
   const highScore = localStorage.getItem('highScore') || 0;
   if (score > highScore) {
     localStorage.setItem('highScore', score);
@@ -42,10 +41,18 @@ function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0xf0f0f0);
 
+  // Додаємо сітку
+  const gridHelper = new THREE.GridHelper(4, 4, 0x888888, 0xcccccc);
+  gridHelper.position.set(0, 0, -0.11);
+  gridHelper.rotation.x = Math.PI / 2;  // повертаємо сітку горизонтально
+  scene.add(gridHelper);
+
+
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-  camera.position.set(5, 5, 6);
-  scene.rotation.y = Math.PI / 3,5;
+  camera.position.set(6, 4, 3); // Камера вправо і зверху
+  scene.rotation.y = Math.PI / 6; 
   camera.lookAt(0, 0, 0);
+  
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -81,9 +88,16 @@ function init() {
   animate();
 }
 
-function animate() {
+let lastTime = 0;
+function animate(time = 0) {
   requestAnimationFrame(animate);
+
+  const delta = (time - lastTime) / 1000;
+  lastTime = time;
+
   controls.update();
+  if (game) game.update(delta);
+
   renderer.render(scene, camera);
 }
 
@@ -91,7 +105,6 @@ function onGameOver(score) {
   document.getElementById('final-score').textContent = score;
   document.getElementById('game-over-screen').style.display = 'block';
 
-  // Відобразити рекорд
   const highScore = localStorage.getItem('highScore') || 0;
   if (highScoreElem) highScoreElem.textContent = highScore;
 }
