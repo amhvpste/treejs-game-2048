@@ -1,10 +1,11 @@
-export function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
-}
-
-export function getRandomPosition(gridSize) {
-  return {
-    x: getRandomInt(0, gridSize),
-    y: getRandomInt(0, gridSize)
-  };
+export function getRandomEmptyCell(grid) {
+  const empty = [];
+  for (let x = 0; x < 4; x++) {
+    for (let y = 0; y < 4; y++) {
+      if (grid[x][y] === null) {
+        empty.push({ x, y });
+      }
+    }
+  }
+  return empty.length ? empty[Math.floor(Math.random() * empty.length)] : null;
 }
