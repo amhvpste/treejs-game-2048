@@ -1,6 +1,4 @@
+// vite.config.js
 export default {
-  root: '.',
-  server: {
-    open: true
-  }
-}
+  root: './',
+};

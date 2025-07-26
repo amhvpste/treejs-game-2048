@@ -1,60 +1,33 @@
 import * as THREE from 'three';
+import { CSG } from 'three-js-csg';
 
 export class Tile {
-  constructor(value, x, y) {
+  constructor(value, font) {
     this.value = value;
-    this.x = x;
-    this.y = y;
-    this.merged = false;
-
-    const geometry = new THREE.BoxGeometry(0.9, 0.9, 0.2);
-    const color = new THREE.Color(`hsl(${Math.log2(value) * 40}, 80%, 60%)`);
-    const material = new THREE.MeshPhongMaterial({ color });
-    this.mesh = new THREE.Mesh(geometry, material);
-
-    this.sprite = this.createTextSprite(value);
-    this.mesh.add(this.sprite);
-
-    this.targetPos = new THREE.Vector3(this.x - 1.5, 1.5 - this.y, 0);
-    this.mesh.position.copy(this.targetPos);
+    this.mesh = this.createTileMesh(value, font);
   }
 
-  updateValue(newValue) {
-    this.value = newValue;
-    this.mesh.material.color.setHSL(Math.log2(newValue) * 40 / 360, 0.8, 0.6);
-    this.mesh.remove(this.sprite);
-    this.sprite = this.createTextSprite(newValue);
-    this.mesh.add(this.sprite);
-  }
+  createTileMesh(value, font) {
+    const tileGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const tileMaterial = new THREE.MeshStandardMaterial({ color: 0xf5f5dc });
+    const cube = new THREE.Mesh(tileGeometry, tileMaterial);
 
-  createTextSprite(text) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 128;
-    canvas.height = 128;
-    const context = canvas.getContext('2d');
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = 'black';
-    context.font = '48px sans-serif';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText(text, canvas.width / 2, canvas.height / 2);
+    const textGeometry = new THREE.TextGeometry(value.toString(), {
+      font: font,
+      size: 0.4,
+      height: 0.05,
+    });
 
-    const texture = new THREE.CanvasTexture(canvas);
-    const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
-    const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(0.8, 0.8, 1);
-    sprite.position.z = 0.51;
+    textGeometry.center();
 
-    return sprite;
-  }
+    const textMaterial = new THREE.MeshStandardMaterial();
+    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+    textMesh.position.set(0, 0.5, 0);
 
-  moveTo(x, y) {
-    this.x = x;
-    this.y = y;
-    this.targetPos.set(x - 1.5, 1.5 - y, 0);
-  }
-
-  update(delta) {
-    this.mesh.position.lerp(this.targetPos, delta * 10);
+    // Boolean вирізання
+    const cubeCSG = CSG.fromMesh(cube);
+    const textCSG = CSG.fromMesh(textMesh);
+    const subtracted = CSG.subtract(cubeCSG, textCSG);
+    return CSG.toMesh(subtracted, cube.matrixWorld, tileMaterial);
   }
 }
